@@ -1,0 +1,48 @@
+# Dependencies
+node_modules/
+__pycache__/
+*.pyc
+
+# Environment files
+.env
+.env.local
+.env.production
+.env.prod
+
+# Build outputs
+.next/
+dist/
+build/
+
+# Database
+db/
+*.db
+*.sqlite
+
+# Logs
+logs/
+*.log
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# IDE files
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# Docker
+.docker/
+
+# Audio storage (local development)
+backend/storage/
+
+# Test files
+test_data/
+*.test.js
+
+# Temporary files
+tmp/
+temp/
