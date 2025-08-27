@@ -44,9 +44,11 @@ COPY backend/ ./backend/
 
 # Copy built frontend
 COPY --from=frontend-builder /frontend/.next ./frontend/.next
-COPY --from=frontend-builder /frontend/public ./frontend/public
 COPY --from=frontend-builder /frontend/package*.json ./frontend/
 COPY frontend/next.config.js ./frontend/
+# Create public directory and copy if it exists with content
+RUN mkdir -p ./frontend/public
+COPY --from=frontend-builder /frontend/public ./frontend/public/
 
 # Install frontend production dependencies
 WORKDIR /app/frontend
