@@ -11,9 +11,11 @@ RUN npm run build
 # Main container with Python, Node, and PostgreSQL
 FROM python:3.11-slim
 
-# Install Node.js and PostgreSQL
+# Install Node.js, PostgreSQL, and pgvector
 RUN apt-get update && apt-get install -y \
     curl \
+    git \
+    build-essential \
     postgresql \
     postgresql-contrib \
     postgresql-server-dev-all \
@@ -22,14 +24,14 @@ RUN apt-get update && apt-get install -y \
     && apt-get install -y nodejs \
     && rm -rf /var/lib/apt/lists/*
 
-# Set up PostgreSQL
-USER postgres
-RUN /etc/init.d/postgresql start && \
-    psql --command "CREATE USER bardo_user WITH SUPERUSER PASSWORD 'bardo_pass';" && \
-    createdb -O bardo_user bardo_prod && \
-    psql -d bardo_prod -c "CREATE EXTENSION IF NOT EXISTS vector;"
+# Install pgvector extension
+RUN cd /tmp \
+    && git clone --branch v0.7.4 https://github.com/pgvector/pgvector.git \
+    && cd pgvector \
+    && make \
+    && make install
 
-# Switch back to root
+# Switch back to root (skip DB setup in build, do it at runtime)
 USER root
 
 # Set up application directory
@@ -67,11 +69,8 @@ ENV PYTHONPATH=/app/backend
 # Expose ports
 EXPOSE 3000 8000 5432
 
-# Create startup script
-RUN echo '#!/bin/bash\n\
-service postgresql start\n\
-cd /app/backend && python -m uvicorn main:app --host 0.0.0.0 --port 8000 &\n\
-cd /app/frontend && npm start &\n\
-wait' > /app/start.sh && chmod +x /app/start.sh
+# Copy startup script
+COPY start.sh /app/start.sh
+RUN chmod +x /app/start.sh
 
 CMD ["/app/start.sh"]
